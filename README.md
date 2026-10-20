@@ -46,8 +46,8 @@ Built with a custom industrial dark HUD aesthetic inspired by mission-control te
 ## 🌐 Companion Backend (Django Server)
 
 OceanMonitor2 communicates with a companion **Django REST Telemetry Server**:
-- **Default Cloud Endpoint**: `https://esp8266.pythonanywhere.com`
-- **Companion Repository**: [OceanRemote Django IoT Backend](https://github.com/esp8266/oceanremote-backend) *(or deploy your own server using the API schema below)*
+- **Default Cloud Endpoint**: `https:/username.pythonanywhere.com`
+- **Companion Repository**: [OceanRemote Django IoT Backend]([https://github.com/esp8266/oceanremote-backend](https://github.com/AdminOceanremote)) **
 
 ### API Specification
 
