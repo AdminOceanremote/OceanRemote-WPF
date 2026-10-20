@@ -1,0 +1,34 @@
+<UserControl x:Class="OceanMonitor2.DeviceSettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#040814">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="DEVICE SETTINGS" Foreground="#38BDF8" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <TextBlock Text="Select Device:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <ComboBox x:Name="CmbDevices" Width="200" SelectionChanged="CmbDevices_SelectionChanged"/>
+        </StackPanel>
+
+        <Border Grid.Row="2" Background="#0B132B" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="20" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400">
+            <StackPanel x:Name="EditorPanel" Visibility="Collapsed">
+                <TextBlock Text="Device Name" Foreground="#94A3B8" Margin="0,5"/>
+                <TextBox x:Name="TxtName" Background="#070D18" Foreground="White" Padding="6" Margin="0,0,0,15"/>
+
+                <TextBlock Text="Temperature Offset (°C)" Foreground="#94A3B8" Margin="0,5"/>
+                <TextBox x:Name="TxtOffset" Background="#070D18" Foreground="White" Padding="6" Margin="0,0,0,15" Text="0.0"/>
+
+                <Button Content="SAVE CHANGES" Background="#38BDF8" Foreground="#070D18" FontWeight="Bold" Padding="10" Click="BtnSave_Click"/>
+                
+                                <Button Content="DELETE DEVICE" Background="#EF4444" Foreground="White" FontWeight="Bold" Padding="10" Margin="0,10,0,0" Click="BtnDelete_Click"/>
+                <TextBlock x:Name="TxtStatus" Foreground="#10B981" Margin="0,15,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

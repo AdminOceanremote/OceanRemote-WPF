@@ -1,0 +1,265 @@
+<UserControl x:Class="OceanMonitor2.ChartWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             Background="#040814" Foreground="#F8FAFC"
+             FontFamily="Segoe UI, Consolas">
+
+    <UserControl.Resources>
+        <!-- SCADA Brushes -->
+        <SolidColorBrush x:Key="BgDark" Color="#040814"/>
+        <SolidColorBrush x:Key="PanelBg" Color="#081020"/>
+        <SolidColorBrush x:Key="CardBg" Color="#060C1B"/>
+        <SolidColorBrush x:Key="BorderCyan" Color="#38BDF8"/>
+        <SolidColorBrush x:Key="BorderPurple" Color="#A78BFA"/>
+        <SolidColorBrush x:Key="BorderMuted" Color="#162238"/>
+
+        <!-- Atmospheric Glows -->
+        <DropShadowEffect x:Key="SubtleHUDGlow" Color="#0284C7" BlurRadius="14" ShadowDepth="0" Opacity="0.25"/>
+        <DropShadowEffect x:Key="CardGlow" Color="#0284C7" BlurRadius="18" ShadowDepth="0" Opacity="0.2"/>
+
+        <!-- Background HUD Tile -->
+        <DrawingBrush x:Key="GridPatternBrush" TileMode="Tile" Viewport="0,0,32,32" ViewportUnits="Absolute">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Geometry="M 0,0 L 32,0 32,32 0,32 Z">
+                        <GeometryDrawing.Brush>
+                            <SolidColorBrush Color="#040814"/>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 0,32 L 32,32 M 32,0 L 32,32">
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#0A1528" Thickness="1"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+
+        <!-- Cyber Button Style -->
+        <Style x:Key="CyberActionBtn" TargetType="Button">
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#38BDF8" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark DatePicker Style -->
+        <Style TargetType="DatePicker">
+            <Setter Property="Background" Value="#060C1B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#162238"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource GridPatternBrush}">
+        <Grid.RowDefinitions>
+            <!-- TOP COMMAND HEADER -->
+            <RowDefinition Height="Auto"/>
+            <!-- AGGREGATE SUMMARY STRIP -->
+            <RowDefinition Height="Auto"/>
+            <!-- MAIN HIGH-RES CHART CARD -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ================= ROW 0: COMMAND HEADER ================= -->
+        <Border Grid.Row="0" Background="#081020" BorderBrush="#162238" BorderThickness="0,0,0,1" Padding="20,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title & Room Identity -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" CornerRadius="8" Background="#060C1B" 
+                            BorderBrush="#38BDF8" BorderThickness="1.5" Effect="{StaticResource SubtleHUDGlow}">
+                        <TextBlock Text="24H" Foreground="#38BDF8" FontSize="11" FontWeight="Bold" 
+                                   FontFamily="Consolas" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="TitleLabel" Text="TODAY // DIURNAL TELEMETRY" Foreground="#38BDF8"
+                                       FontSize="15" FontWeight="Bold" FontFamily="Consolas"/>
+                            <Border Background="#162238" CornerRadius="3" Margin="8,0,0,0" Padding="5,1">
+                                <TextBlock Text="TELEMETRY_LOG" Foreground="#64748B" FontSize="9" FontWeight="Bold" FontFamily="Consolas"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock x:Name="DeviceSubtitle" Text="NODE ID // HIGH RESOLUTION DIURNAL TRACE" 
+                                   Foreground="#64748B" FontSize="10" FontFamily="Consolas" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Center Status Chip -->
+                <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                        Background="#050C1A" BorderBrush="#162238" BorderThickness="1" CornerRadius="20" Padding="14,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="DATA RESOLUTION:" Foreground="#64748B" FontSize="10" FontFamily="Consolas" VerticalAlignment="Center"/>
+                        <TextBlock Text="FAST-SERIES (5-MIN)" Foreground="#38BDF8" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Margin="6,0,14,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="WINDOW:" Foreground="#64748B" FontSize="10" FontFamily="Consolas" VerticalAlignment="Center"/>
+                        <TextBlock Text="24 HOURS" Foreground="#FBBF24" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Date Picker & Filter Button -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="DATE:" Foreground="#64748B" FontSize="10" FontFamily="Consolas" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <DatePicker Background="#0B132B" Foreground="White" BorderBrush="#1E293B" x:Name="DatePickerBox" Width="130" Margin="0,0,12,0"
+                                SelectedDateChanged="DatePicker_Changed"/>
+
+                    <Button Content="PULL DATA" Click="Refresh_Click" Style="{StaticResource CyberActionBtn}"
+                            Background="#0C4A6E" Foreground="#BAE6FD" BorderBrush="#0284C7" BorderThickness="1" Padding="14,6"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= ROW 1: OVERVIEW METRIC STRIP ================= -->
+        <Border Grid.Row="1" Margin="20,10,20,4" Background="#081020" CornerRadius="10" BorderBrush="#162238" BorderThickness="1" Padding="16,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="SAMPLE POINTS" FontSize="9" Foreground="#64748B" FontWeight="Bold" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TotalPointsLabel" Text="0" FontSize="18" FontWeight="Bold" Foreground="#A78BFA" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <Rectangle Grid.Column="1" Width="1" Fill="#162238" Margin="0,4"/>
+
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="GLOBAL MIN" FontSize="9" Foreground="#64748B" FontWeight="Bold" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TopMinLabel" Text="--°" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <Rectangle Grid.Column="3" Width="1" Fill="#162238" Margin="0,4"/>
+
+                <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                    <TextBlock Text="24H MEAN" FontSize="9" Foreground="#64748B" FontWeight="Bold" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TopAvgLabel" Text="--°" FontSize="18" FontWeight="Bold" Foreground="#FBBF24" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <Rectangle Grid.Column="5" Width="1" Fill="#162238" Margin="0,4"/>
+
+                <StackPanel Grid.Column="6" HorizontalAlignment="Center">
+                    <TextBlock Text="GLOBAL MAX" FontSize="9" Foreground="#64748B" FontWeight="Bold" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TopMaxLabel" Text="--°" FontSize="18" FontWeight="Bold" Foreground="#EF4444" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <Rectangle Grid.Column="7" Width="1" Fill="#162238" Margin="0,4"/>
+
+                <StackPanel Grid.Column="8" HorizontalAlignment="Center">
+                    <TextBlock Text="DIURNAL SPREAD" FontSize="9" Foreground="#64748B" FontWeight="Bold" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TopSpreadLabel" Text="--°" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= ROW 2: REPORT-STYLED TELEMETRY CARD ================= -->
+        <Border Grid.Row="2" Margin="20,8,20,16" Background="#060C1B" CornerRadius="10"
+                BorderBrush="#162238" BorderThickness="1.5"
+                Effect="{StaticResource CardGlow}" Padding="16,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Sub-Card Header -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- LiveCharts2 Canvas -->
+                    <RowDefinition Height="*"/>
+                    <!-- Bottom Day Statistics Ribbon -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Sub-Card Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#1E1B4B" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                            <TextBlock Text="DAY" Foreground="#A78BFA" FontSize="9" FontWeight="Bold" FontFamily="Consolas"/>
+                        </Border>
+                        <TextBlock x:Name="CardDateTitle" Text="DIURNAL TEMPERATURE TRACE" FontSize="14" FontWeight="Bold"
+                                   FontFamily="Consolas" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="CardSampleCountText" Text="[0 SAMPLES]" FontSize="9" Foreground="#64748B" 
+                                   FontFamily="Consolas" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Thermal Drift / Range Spread Badge -->
+                    <Border HorizontalAlignment="Right" Background="#02040A" BorderBrush="#0C1D38" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="SPREAD: " FontSize="9" Foreground="#475569" FontFamily="Consolas"/>
+                            <TextBlock x:Name="CardSpreadText" Text="Δ 0.0°C" FontSize="9" Foreground="#38BDF8" FontWeight="Bold" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Black Pitch Canvas for LiveCharts2 Line Plot -->
+                <Border Grid.Row="1" Background="#02040A" CornerRadius="6" BorderBrush="#081426" BorderThickness="1" Padding="6">
+                    <lvc:CartesianChart x:Name="ChartControl"/>
+                </Border>
+
+                <!-- Bottom Day Statistics Ribbon -->
+                <Border Grid.Row="2" Background="#030712" CornerRadius="6" BorderBrush="#0C1D38" BorderThickness="1" Margin="0,8,0,0" Padding="12,6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="MIN READING" FontSize="8" Foreground="#64748B" FontFamily="Consolas"/>
+                            <TextBlock x:Name="MinLabel" Text="--" Foreground="#38BDF8" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <TextBlock Text="24H AVERAGE" FontSize="8" Foreground="#64748B" FontFamily="Consolas"/>
+                            <TextBlock x:Name="AvgLabel" Text="--" Foreground="#FBBF24" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock Text="MAX READING" FontSize="8" Foreground="#64748B" FontFamily="Consolas"/>
+                            <TextBlock x:Name="MaxLabel" Text="--" Foreground="#EF4444" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" HorizontalAlignment="Right">
+                            <TextBlock Text="STABILITY EVAL" FontSize="8" Foreground="#64748B" FontFamily="Consolas"/>
+                            <TextBlock x:Name="StabilityLabel" Text="NOMINAL" Foreground="#10B981" FontSize="12" FontWeight="Bold" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

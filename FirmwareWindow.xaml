@@ -1,0 +1,128 @@
+<Window x:Class="OceanMonitor2.FirmwareWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Firmware Generator" Height="600" Width="700"
+        WindowStartupLocation="CenterScreen" Background="#070D18">
+    <Window.Resources>
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="20" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="2" Background="#0B132B" BorderBrush="#38BDF8" BorderThickness="1" />
+                <Border Grid.Column="0" CornerRadius="2,0,0,2" Margin="1" Background="#0B132B" />
+                <Path x:Name="Arrow" Grid.Column="1" Fill="White" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z"/>
+            </Grid>
+        </ControlTemplate>
+        <Style TargetType="ComboBox">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="20"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Focusable="false" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
+                            <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="3,3,23,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="#0B132B" BorderBrush="#38BDF8" BorderThickness="1"/>
+                                    <ScrollViewer SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Background" Value="#0B132B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#38BDF8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title -->
+            <RowDefinition Height="Auto"/> <!-- Board -->
+            <RowDefinition Height="Auto"/> <!-- Sensors List -->
+            <RowDefinition Height="Auto"/> <!-- Add Sensor Btn -->
+            <RowDefinition Height="Auto"/> <!-- Device -->
+            <RowDefinition Height="Auto"/> <!-- SSID -->
+            <RowDefinition Height="Auto"/> <!-- Pass -->
+            
+            <RowDefinition Height="Auto"/> <!-- Generate Btn -->
+            <RowDefinition Height="Auto"/>    <!-- Code TextBox -->
+            <RowDefinition Height="Auto"/> <!-- Copy Btn -->
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="GENERATE FIRMWARE" Foreground="#38BDF8" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+        <Grid Grid.Row="1" Margin="0,5">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <TextBlock Text="Board Type:" Foreground="#94A3B8" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" x:Name="CmbBoard" Margin="0,0,0,0">
+                <ComboBoxItem Content="ESP32" IsSelected="True"/>
+                <ComboBoxItem Content="ESP8266 D1 Mini"/>
+                <ComboBoxItem Content="ESP8266 D1 Large"/>
+                <ComboBoxItem Content="Pico W"/>
+            </ComboBox>
+        </Grid>
+
+
+
+                <StackPanel Grid.Row="2" Margin="0,5">
+            <TextBlock Text="Sensors:" Foreground="#94A3B8" Margin="0,0,0,5"/>
+            <StackPanel x:Name="SensorsList"/>
+            <Button Content="+ Add Sensor" Background="#A78BFA" Foreground="#070D18" FontWeight="Bold" HorizontalAlignment="Left" Padding="10,4" Margin="0,5,0,0" Click="BtnAddSensor_Click"/>
+        </StackPanel>
+
+
+        <Grid Grid.Row="5" Margin="0,5">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <TextBlock Text="WiFi SSID:" Foreground="#94A3B8" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" x:Name="TxtSsid" Background="#0B132B" Foreground="White" Padding="4"/>
+        </Grid>
+
+        <Grid Grid.Row="6" Margin="0,5">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <TextBlock Text="WiFi Pass:" Foreground="#94A3B8" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" x:Name="TxtPass" Background="#0B132B" Foreground="White" Padding="4"/>
+        </Grid>
+
+
+
+        <Button Grid.Row="7" x:Name="BtnGenerate" Content="Generate Code" Margin="0,15" Padding="10" Background="#38BDF8" Foreground="#070D18" FontWeight="Bold" Click="BtnGenerate_Click"/>
+
+        <TextBox Grid.Row="8" x:Name="TxtCode" Height="250" Background="#02040A" Foreground="#10B981" FontFamily="Consolas" FontSize="12" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,10,0,10" TextWrapping="NoWrap" AcceptsReturn="True"/>
+
+        <Button Grid.Row="9" x:Name="BtnCopy" Content="Copy to Clipboard" Padding="10" Background="#A78BFA" Foreground="#070D18" FontWeight="Bold" Click="BtnCopy_Click"/>
+    </Grid>
+</ScrollViewer>
+</Window>
